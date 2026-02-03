@@ -1,0 +1,29 @@
+# Standard Preprocessing Configuration
+# Stage-first architecture: This config defines a preprocessing variant
+
+# Stage metadata (NEW in stage-first architecture)
+stage: preprocessing
+name: standard
+description: Standard preprocessing pipeline with moderate filtering and ICA
+depends_on: null  # Preprocessing has no upstream dependencies
+
+# Preprocessing steps
+steps:
+  - name: filter
+    l_freq: 0.5
+    h_freq: 40.0
+    method: fir
+
+  - name: bad_channels
+    method: automatic
+    threshold: 3.0
+
+  - name: ica
+    method: infomax
+    n_components: null  # Auto-select
+    random_state: 42
+    reject_eog: true
+    reject_ecg: false  # EEG-only dataset
+
+# Output naming
+task: null  # Can be overridden by CLI argument

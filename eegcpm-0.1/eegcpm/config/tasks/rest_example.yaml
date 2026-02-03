@@ -1,0 +1,46 @@
+# Task Configuration: Resting State
+# No events - continuous recording
+
+task_name: rest
+description: Resting state with eyes open/closed
+
+# Task type - continuous (no events)
+task_type: continuous
+
+# No primary event for resting state
+primary_event: null
+
+# No epoching for continuous data
+tmin: null
+tmax: null
+baseline: null
+
+# Conditions based on annotations (if available)
+conditions:
+  - name: eyes_open
+    event_codes: [10]
+    description: Eyes open resting
+
+  - name: eyes_closed
+    event_codes: [20]
+    description: Eyes closed resting
+
+# No ERP components for continuous data
+erp_components: null
+
+# No response mapping
+response_mapping: null
+
+# No trial binning
+binning: null
+
+# Rejection criteria (used for continuous windowing if needed)
+reject: null
+flat: null
+
+sampling_rate: 500
+
+notes: |
+  Resting state configuration.
+  No event-related analysis.
+  Used for connectivity and spectral power analysis only.

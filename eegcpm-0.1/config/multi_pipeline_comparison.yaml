@@ -1,0 +1,226 @@
+# Multi-Pipeline Preprocessing Comparison Configuration
+# Compares multiple preprocessing approaches on the same data
+#
+# Author: EEGCPM Development Team
+# Date: 2025-12-01
+
+# List of pipelines to compare
+pipelines:
+  # Pipeline 1: Standard MNE-Python with ICA
+  - name: "mne_standard"
+    type: "mne"
+    enabled: true
+    description: "Standard MNE-Python preprocessing with PICARD ICA and ICLabel"
+    parameters:
+      montage:
+        enabled: true
+        montage_name: "GSN-HydroCel-129"
+
+      bad_channels:
+        enabled: true
+        detection_methods:
+          - flatline: true
+          - variance: true
+          - correlation: false  # Requires autoreject
+        flatline_duration_s: 5.0
+        variance_threshold: 3.0
+        interpolation:
+          enabled: true
+          method: "spline"
+
+      artifacts:
+        enabled: true
+        methods:
+          - threshold: true
+        amplitude_threshold_uv: 150
+
+      referencing:
+        enabled: true
+        reference_type: "average"
+
+      resampling:
+        enabled: false
+
+      filtering:
+        enabled: true
+        l_freq: 0.5
+        h_freq: 40.0
+        notch_freq: null
+        method: "fir"
+
+      ica:
+        enabled: true
+        n_components: 20
+        method: "picard"
+        random_state: 42
+        max_iter: 500
+        artifact_detection:
+          enabled: true
+          method: "iclabel"
+          threshold: 0.8
+
+      asr:
+        enabled: false
+
+  # Pipeline 2: MNE with Extended ICA (more components)
+  - name: "mne_extended_ica"
+    type: "mne"
+    enabled: true
+    description: "MNE preprocessing with extended ICA (30 components)"
+    parameters:
+      montage:
+        enabled: true
+        montage_name: "GSN-HydroCel-129"
+
+      bad_channels:
+        enabled: true
+        detection_methods:
+          - flatline: true
+          - variance: true
+        flatline_duration_s: 5.0
+        variance_threshold: 3.0
+        interpolation:
+          enabled: true
+          method: "spline"
+
+      artifacts:
+        enabled: true
+        methods:
+          - threshold: true
+        amplitude_threshold_uv: 150
+
+      referencing:
+        enabled: true
+        reference_type: "average"
+
+      filtering:
+        enabled: true
+        l_freq: 0.5
+        h_freq: 40.0
+        method: "fir"
+
+      ica:
+        enabled: true
+        n_components: 30  # More components
+        method: "picard"
+        random_state: 42
+        max_iter: 500
+        artifact_detection:
+          enabled: true
+          method: "iclabel"
+          threshold: 0.8
+
+      asr:
+        enabled: false
+
+  # Pipeline 3: MNE with Stricter Filtering
+  - name: "mne_strict_filter"
+    type: "mne"
+    enabled: true
+    description: "MNE with stricter high-pass filter (1 Hz) for slow drift removal"
+    parameters:
+      montage:
+        enabled: true
+        montage_name: "GSN-HydroCel-129"
+
+      bad_channels:
+        enabled: true
+        detection_methods:
+          - flatline: true
+          - variance: true
+        flatline_duration_s: 5.0
+        variance_threshold: 3.0
+        interpolation:
+          enabled: true
+          method: "spline"
+
+      artifacts:
+        enabled: true
+        methods:
+          - threshold: true
+        amplitude_threshold_uv: 150
+
+      referencing:
+        enabled: true
+        reference_type: "average"
+
+      filtering:
+        enabled: true
+        l_freq: 1.0  # Stricter high-pass
+        h_freq: 40.0
+        notch_freq: 60  # Add notch filter for line noise
+        method: "fir"
+
+      ica:
+        enabled: true
+        n_components: 20
+        method: "picard"
+        random_state: 42
+        artifact_detection:
+          enabled: true
+          method: "iclabel"
+          threshold: 0.8
+
+      asr:
+        enabled: false
+
+  # Pipeline 4: EEGPrep 3-Step
+  - name: "eegprep_standard"
+    type: "eegprep"
+    enabled: true
+    description: "EEGPrep 3-step: Mild ASR → ICA → Aggressive ASR"
+    parameters:
+      # EEGPrep Step 1: Mild ASR
+      eegprep_config_mild:
+        FlatlineCriterion: 5
+        Highpass: [0.25, 0.75]
+        BurstCriterion: 40  # MILD
+        ChannelCriterion: 0.8
+        WindowCriterion: 0.25
+        LineNoiseCriterion: 4
+
+      # EEGPrep Step 3: Aggressive ASR
+      eegprep_config_aggressive:
+        FlatlineCriterion: "off"
+        Highpass: "off"
+        BurstCriterion: 20  # AGGRESSIVE
+        ChannelCriterion: "off"
+        WindowCriterion: 0.25
+        LineNoiseCriterion: "off"
+
+  # Pipeline 5: EEGPrep with Very Aggressive ASR
+  - name: "eegprep_very_aggressive"
+    type: "eegprep"
+    enabled: true
+    description: "EEGPrep with very aggressive ASR (BurstCriterion=10)"
+    parameters:
+      # Step 1: Mild ASR
+      eegprep_config_mild:
+        FlatlineCriterion: 5
+        Highpass: [0.25, 0.75]
+        BurstCriterion: 40
+        ChannelCriterion: 0.8
+        WindowCriterion: 0.25
+        LineNoiseCriterion: 4
+
+      # Step 3: Very Aggressive ASR
+      eegprep_config_aggressive:
+        FlatlineCriterion: "off"
+        Highpass: "off"
+        BurstCriterion: 10  # VERY AGGRESSIVE
+        ChannelCriterion: "off"
+        WindowCriterion: 0.25
+        LineNoiseCriterion: "off"
+
+# Comparison QC settings
+comparison_qc:
+  figure_dpi: 150
+  generate_individual_reports: true
+  generate_summary_report: true
+
+# Batch processing settings
+batch:
+  n_subjects: 10  # Process 10 subjects
+  parallel: false  # Set to true to process subjects in parallel
+  save_intermediate: true  # Save preprocessed data for each pipeline
+  reference_channels: ['E129']  # Channels to drop before processing

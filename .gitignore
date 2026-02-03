@@ -1,0 +1,94 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Testing
+.pytest_cache/
+.coverage
+.tox/
+htmlcov/
+*.cover
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Data directories (DO NOT COMMIT DATA)
+hbn/
+data/
+derivatives/
+bids/
+*.fif
+*.set
+*.edf
+*.bdf
+*.vhdr
+*.vmrk
+*.eeg
+
+# Output files
+*.html
+*.png
+*.jpg
+*.pdf
+*.csv
+*.json
+*.h5
+*.hdf5
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS
+Thumbs.db
+.Trash-*
+
+# Project-specific
+.eegcpm/
+state.db
+*.db
+*.sqlite

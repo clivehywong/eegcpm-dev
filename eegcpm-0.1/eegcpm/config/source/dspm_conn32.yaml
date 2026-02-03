@@ -1,0 +1,36 @@
+# Source reconstruction configuration - dSPM with CONN 32 ROIs
+stage: source
+variant: dSPM-CONN32
+
+# Dependencies
+depends_on:
+  preprocessing: eeglab
+  task: contrastdetection
+  epochs: standard  # Or null for continuous data
+
+# Source reconstruction method
+method: dSPM  # Options: dSPM, sLORETA, eLORETA, MNE
+
+# Forward model parameters
+forward:
+  template: fsaverage  # Template head model
+  spacing: oct6        # Source space spacing (oct5, oct6, ico4, ico5)
+
+# Inverse parameters
+inverse:
+  snr: 3.0        # Signal-to-noise ratio
+  loose: 0.2      # Loose orientation constraint (0-1, 0=fixed, 1=free)
+  depth: 0.8      # Depth weighting (0-1)
+
+# Parcellation for ROI extraction
+parcellation: conn_networks  # CONN 32 ROIs
+roi_radius: 10.0  # mm - sphere radius for ROI extraction
+
+# Subject selection
+subjects: all  # Or list: [sub-001, sub-002]
+
+# Output options
+output:
+  save_stc: true          # Save full source estimates
+  save_roi_tc: true       # Save ROI time courses
+  generate_qc: true       # Generate QC report

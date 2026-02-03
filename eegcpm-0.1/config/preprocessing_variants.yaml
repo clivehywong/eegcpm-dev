@@ -1,0 +1,328 @@
+# EEGCPM Preprocessing Configuration Variants
+#
+# This file defines multiple preprocessing configurations for systematic
+# comparison of how preprocessing choices affect CPM prediction performance.
+#
+# Each variant represents a single parameter change from the MNE-BIDS baseline,
+# allowing isolation of effects.
+#
+# Usage:
+#   python scripts/compare_preprocessing_variants.py
+#
+# This will run all variants and compare:
+#   - Preprocessing QC metrics
+#   - Source reconstruction quality
+#   - Connectivity matrices
+#   - CPM prediction performance (R², p-value)
+
+# ==============================================================================
+# BASELINE: MNE-BIDS EQUIVALENT
+# ==============================================================================
+baseline:
+  name: "MNE-BIDS Baseline"
+  description: "Standard MNE-BIDS pipeline equivalent"
+  config_file: "config/preprocessing_mne_bids_equivalent.yaml"
+
+# ==============================================================================
+# FILTER VARIANTS
+# ==============================================================================
+filter_variants:
+  # Test effect of highpass frequency
+  highpass_0.5hz:
+    name: "Highpass 0.5 Hz"
+    description: "Lower highpass (preserves slow oscillations)"
+    changes:
+      filter:
+        l_freq: 0.5  # vs 1.0 Hz baseline
+        h_freq: 40.0
+
+  highpass_0.1hz:
+    name: "Highpass 0.1 Hz"
+    description: "Very low highpass (keeps very slow drifts)"
+    changes:
+      filter:
+        l_freq: 0.1  # Minimal filtering
+        h_freq: 40.0
+
+  highpass_2.0hz:
+    name: "Highpass 2.0 Hz"
+    description: "Aggressive highpass (removes slow artifacts)"
+    changes:
+      filter:
+        l_freq: 2.0  # More aggressive
+        h_freq: 40.0
+
+  # Test effect of lowpass frequency
+  lowpass_30hz:
+    name: "Lowpass 30 Hz"
+    description: "Lower lowpass (narrower band)"
+    changes:
+      filter:
+        l_freq: 1.0
+        h_freq: 30.0  # vs 40 Hz baseline
+
+  lowpass_80hz:
+    name: "Lowpass 80 Hz"
+    description: "Higher lowpass (wider band, includes gamma)"
+    changes:
+      filter:
+        l_freq: 1.0
+        h_freq: 80.0
+
+  # Test notch filter (line noise removal)
+  with_notch_60hz:
+    name: "With 60 Hz Notch"
+    description: "Add notch filter for US line noise"
+    changes:
+      filter:
+        l_freq: 1.0
+        h_freq: 40.0
+        notch_freq: [60, 120]  # 60 Hz + harmonic
+
+# ==============================================================================
+# REFERENCE VARIANTS
+# ==============================================================================
+reference_variants:
+  # Test different reference schemes
+  no_rereference:
+    name: "Original Reference"
+    description: "Keep original vertex reference (no CAR)"
+    changes:
+      reference:
+        type: "original"
+
+  robust_average:
+    name: "Robust Average Reference"
+    description: "Iterative average excluding outliers"
+    changes:
+      reference:
+        type: "robust_average"
+
+  custom_cz:
+    name: "Cz Reference"
+    description: "Re-reference to Cz (vertex)"
+    changes:
+      reference:
+        type: "custom"
+        channels: "Cz"
+
+# ==============================================================================
+# BAD CHANNEL DETECTION VARIANTS
+# ==============================================================================
+bad_channel_variants:
+  # Test detection method effects
+  variance_only:
+    name: "Variance Only"
+    description: "Use only variance-based detection"
+    changes:
+      bad_channels:
+        methods: ["variance"]
+
+  correlation_only:
+    name: "Correlation Only"
+    description: "Use only correlation-based detection"
+    changes:
+      bad_channels:
+        methods: ["correlation"]
+
+  strict_thresholds:
+    name: "Strict Bad Channel Detection"
+    description: "More sensitive thresholds"
+    changes:
+      bad_channels:
+        methods: ["variance", "correlation"]
+        variance_threshold: 3.0  # vs 5.0 baseline (stricter)
+        correlation_threshold: 0.6  # vs 0.4 baseline (stricter)
+
+  lenient_thresholds:
+    name: "Lenient Bad Channel Detection"
+    description: "Less sensitive thresholds"
+    changes:
+      bad_channels:
+        methods: ["variance", "correlation"]
+        variance_threshold: 7.0  # vs 5.0 baseline (more lenient)
+        correlation_threshold: 0.2  # vs 0.4 baseline (more lenient)
+
+# ==============================================================================
+# ARTIFACT DETECTION VARIANTS
+# ==============================================================================
+artifact_variants:
+  # Test artifact threshold effects
+  strict_artifacts:
+    name: "Strict Artifact Detection"
+    description: "Lower thresholds (more rejection)"
+    changes:
+      artifact_detection:
+        amplitude_threshold: 0.0001  # 100 µV vs 150 µV
+        gradient_threshold: 0.00005  # 50 µV vs 75 µV
+
+  lenient_artifacts:
+    name: "Lenient Artifact Detection"
+    description: "Higher thresholds (less rejection)"
+    changes:
+      artifact_detection:
+        amplitude_threshold: 0.0002  # 200 µV vs 150 µV
+        gradient_threshold: 0.0001   # 100 µV vs 75 µV
+
+  with_muscle_detection:
+    name: "With Muscle Artifact Detection"
+    description: "Enable muscle artifact detection"
+    changes:
+      artifact_detection:
+        amplitude_threshold: 0.00015
+        gradient_threshold: 0.000075
+        muscle_threshold: 4.0  # Enable muscle detection
+        freq_muscle: [110, 140]
+
+  no_artifact_annotation:
+    name: "No Artifact Annotation"
+    description: "Disable artifact annotation (rely on ICA only)"
+    changes:
+      artifact_detection:
+        enabled: false
+
+# ==============================================================================
+# ICA VARIANTS
+# ==============================================================================
+ica_variants:
+  # Test ICA algorithm
+  ica_infomax:
+    name: "Standard Infomax"
+    description: "Use standard infomax (vs extended-infomax baseline)"
+    changes:
+      ica:
+        enabled: true
+        method: "infomax"  # Standard infomax, not extended
+
+  ica_fastica:
+    name: "FastICA"
+    description: "Use FastICA algorithm"
+    changes:
+      ica:
+        enabled: true
+        method: "fastica"  # vs extended-infomax
+
+  ica_picard:
+    name: "Picard ICA"
+    description: "Use Picard algorithm (faster)"
+    changes:
+      ica:
+        enabled: true
+        method: "picard"
+
+  # Test number of components
+  ica_15_components:
+    name: "ICA 15 Components"
+    description: "Fewer ICA components"
+    changes:
+      ica:
+        enabled: true
+        method: "extended-infomax"
+        n_components: 15  # vs auto (usually 20)
+
+  ica_25_components:
+    name: "ICA 25 Components"
+    description: "More ICA components"
+    changes:
+      ica:
+        enabled: true
+        method: "extended-infomax"
+        n_components: 25
+
+  # Test with/without ICA
+  no_ica:
+    name: "No ICA"
+    description: "Disable ICA (rely on artifact annotation only)"
+    changes:
+      ica:
+        enabled: false
+
+# ==============================================================================
+# COMBINED VARIANTS (Test interactions)
+# ==============================================================================
+combined_variants:
+  minimal_preprocessing:
+    name: "Minimal Preprocessing"
+    description: "Minimal processing (filter only)"
+    changes:
+      bad_channels:
+        auto_detect: false
+      artifact_detection:
+        enabled: false
+      reference:
+        type: "original"
+      filter:
+        l_freq: 1.0
+        h_freq: 40.0
+      ica:
+        enabled: false
+
+  aggressive_preprocessing:
+    name: "Aggressive Preprocessing"
+    description: "Maximum artifact removal"
+    changes:
+      bad_channels:
+        methods: ["variance", "correlation"]
+        variance_threshold: 3.0
+        correlation_threshold: 0.6
+      artifact_detection:
+        enabled: true
+        amplitude_threshold: 0.0001
+        gradient_threshold: 0.00005
+        muscle_threshold: 3.0
+      reference:
+        type: "robust_average"
+      filter:
+        l_freq: 1.0
+        h_freq: 40.0
+        notch_freq: [60, 120]
+      ica:
+        enabled: true
+        method: "extended-infomax"
+        n_components: 25
+
+  conservative_preprocessing:
+    name: "Conservative Preprocessing"
+    description: "Minimal artifact removal, preserve data"
+    changes:
+      bad_channels:
+        methods: ["variance"]
+        variance_threshold: 7.0
+      artifact_detection:
+        enabled: false
+      reference:
+        type: "average"
+      filter:
+        l_freq: 0.5
+        h_freq: 40.0
+      ica:
+        enabled: false
+
+# ==============================================================================
+# COMPARISON METRICS
+# ==============================================================================
+# For each variant, measure:
+#   1. Preprocessing QC:
+#      - Number of bad channels detected
+#      - Percentage of data rejected
+#      - Number of ICA components excluded
+#      - Signal quality metrics (SNR, variance retained)
+#
+#   2. Source reconstruction:
+#      - ROI coverage (how many ROIs have valid data)
+#      - Source SNR per ROI
+#
+#   3. Connectivity:
+#      - Network density
+#      - Edge weight distributions
+#      - Within vs between network connectivity
+#
+#   4. CPM Prediction:
+#      - R² (primary outcome)
+#      - p-value (significance)
+#      - RMSE (error magnitude)
+#
+# Analysis:
+#   - Compare each variant against baseline
+#   - Identify which parameters most affect prediction
+#   - Determine optimal preprocessing strategy for CPM

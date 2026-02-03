@@ -1,0 +1,152 @@
+# YAML Task Specification for Batch Preprocessing
+# This template demonstrates future configurability for the batch processing script
+#
+# Usage (future implementation):
+#   python scripts/batch_preprocess_from_yaml.py --config config/batch_task_specification.yaml
+
+# Dataset configuration
+dataset:
+  name: "hbn"
+  bids_root: "/Volumes/Work/data/hbn/bids"
+  derivatives_root: "/Volumes/Work/data/hbn/derivatives"
+
+# Subjects to process
+subjects:
+  # Option 1: Explicit list
+  list:
+    - "sub-NDARYF728BEP"
+    - "sub-NDARYY218AGA"
+    - "sub-NDARZK753WGR"
+    - "sub-NDARZN501NFF"
+    - "sub-NDARZN702ECL"
+    - "sub-NDARZP564MHU"
+    - "sub-NDARZP630WYL"
+    - "sub-NDARZR538EZH"
+    - "sub-NDARZX849GL3"
+    - "sub-NDARZY502FAG"
+
+  # Option 2: Auto-discover from BIDS (future)
+  # auto_discover: true
+  # pattern: "sub-*"
+
+# Tasks to process
+tasks:
+  # SAIIT task - sustained attention with inhibition of return
+  - name: "saiit"
+    runs:
+      - "task-saiit2afcblock1"
+      - "task-saiit2afcblock2"
+      - "task-saiit2afcblock3"
+
+    # Event specification for this task
+    events:
+      # Source: BIDS events.tsv file
+      source: "bids_events_tsv"
+
+      # Event columns to use
+      columns:
+        onset: "onset"           # Time column
+        trial_type: "trial_type"  # Event type
+        condition: "stim_side"    # Condition identifier
+
+      # Filter: only use stimulus events
+      filter:
+        trial_type: "stimulus"
+
+      # Condition mapping: map values to event codes
+      conditions:
+        left_stimulus:
+          stim_side: "left"
+          event_id: 1
+        right_stimulus:
+          stim_side: "right"
+          event_id: 2
+
+    # ERP/Epoching configuration
+    erp:
+      enabled: true              # Generate ERP QC
+      tmin: -0.5                 # Epoch start (pre-stimulus)
+      tmax: 0.0                  # Epoch end (stimulus onset)
+      baseline: [-0.5, -0.3]     # Baseline correction window
+      decim: 1                   # Decimation factor (1 = no decimation)
+      reject: null               # Auto-rejection (null = use preprocessing quality)
+      detrend: 0                 # Detrending (0 = constant, 1 = linear)
+
+      # ERP analysis windows (for peak detection)
+      windows:
+        baseline:
+          tmin: -0.5
+          tmax: -0.3
+          description: "Pre-stimulus baseline"
+
+    # Output naming (BIDS derivatives convention)
+    output:
+      pipeline_name: "pipeline-saiit-with-erp-qc"
+      desc: "preprocessed"       # Description tag for BIDS derivatives
+      # Output pattern: {subject}_ses-{session}_{task}_desc-{desc}_eeg.fif
+
+  # Resting state task (example for future multi-task processing)
+  # - name: "rest"
+  #   runs:
+  #     - "task-rest"
+  #   events:
+  #     source: null  # No events for resting state
+  #   erp:
+  #     enabled: false
+  #   output:
+  #     pipeline_name: "pipeline-rest"
+  #     desc: "preprocessed"
+
+# Preprocessing configuration
+preprocessing:
+  config_file: "config/preprocessing_mne_bids_equivalent.yaml"
+
+  # Override specific parameters
+  overrides:
+    # filter:
+    #   l_freq: 1.0
+    #   h_freq: 40.0
+    # ica:
+    #   method: "extended-infomax"
+
+# QC configuration
+qc:
+  raw_qc:
+    enabled: true
+    output_dir: "derivatives/raw-qc-{task_name}"
+
+  preprocessed_qc:
+    enabled: true
+    output_dir: "derivatives/{pipeline_name}/qc/preprocessed"
+
+  erp_qc:
+    enabled: true
+    output_dir: "derivatives/{pipeline_name}/qc/erp"
+
+# Output structure
+output:
+  # Base directory for this pipeline
+  pipeline_dir: "derivatives/{pipeline_name}"
+
+  # Subdirectories
+  subdirs:
+    preprocessed: "preprocessed"
+    epochs: "epochs"
+    qc: "qc"
+
+  # File naming follows BIDS derivatives:
+  # {subject}_ses-{session}_{task}_desc-{desc}_{suffix}.{ext}
+
+# Execution configuration
+execution:
+  parallel: false              # Run subjects in parallel (future)
+  n_jobs: 1                    # Number of parallel jobs
+  resume: true                 # Resume from checkpoint if available
+  log_level: "INFO"            # Logging level
+
+# Metadata
+metadata:
+  pipeline_description: "SAIIT task preprocessing with ERP QC for pre-stimulus prediction modeling"
+  version: "0.1.0"
+  author: "EEGCPM Development Team"
+  date: "2025-11-27"

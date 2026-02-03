@@ -1,0 +1,115 @@
+# Model Registry
+# Multi-agent system with Opus 4.5 as lead for both planning and implementation
+
+models:
+  # Lead Agent - Primary decision maker (Planning & Implementation)
+  opus-4.5:
+    provider: openrouter
+    model_id: "openrouter,anthropic/claude-opus-4.5"
+    role: lead
+    capabilities:
+      - complex_reasoning
+      - architecture_design
+      - final_decisions
+      - code_review
+      - implementation_lead
+    cost_tier: high
+    context_window: 200000
+
+  # Planning Participants
+  gemini-3-pro:
+    provider: gemini
+    model_id: "gemini/gemini-3-pro-preview"
+    role: planning
+    capabilities:
+      - research
+      - analysis
+      - alternative_proposals
+      - documentation
+    cost_tier: medium
+    context_window: 1000000
+
+  gpt-5.1:
+    provider: openai
+    model_id: "openai/gpt-5.1"
+    role: planning
+    capabilities:
+      - problem_solving
+      - critique
+      - validation
+      - code_generation
+    cost_tier: medium
+    context_window: 128000
+
+  # Implementation Support
+  sonnet-4.5-online:
+    provider: anthropic
+    model_id: "anthropic/claude-sonnet-4.5:online"
+    role: research
+    capabilities:
+      - web_search
+      - current_info
+      - api_lookup
+      - documentation_fetch
+    cost_tier: medium
+    context_window: 200000
+
+  sonnet-4.5:
+    provider: anthropic
+    model_id: "anthropic/claude-sonnet-4.5"
+    role: implementation
+    capabilities:
+      - code_generation
+      - refactoring
+      - testing
+      - debugging
+    cost_tier: medium
+    context_window: 200000
+
+  haiku-4.5:
+    provider: anthropic
+    model_id: "anthropic/claude-haiku-4.5"
+    role: utility
+    capabilities:
+      - quick_tasks
+      - formatting
+      - simple_queries
+      - batch_processing
+    cost_tier: low
+    context_window: 200000
+
+  grok-4.1-fast:
+    provider: x-ai
+    model_id: "x-ai/grok-4.1-fast:free"
+    role: utility
+    capabilities:
+      - quick_validation
+      - brainstorming
+      - drafts
+    cost_tier: free
+    context_window: 131072
+
+  gpt-5.1-codex:
+    provider: openai
+    model_id: "openai/gpt-5.1-codex"
+    role: implementation
+    capabilities:
+      - code_generation
+      - code_completion
+      - specialized_coding
+    cost_tier: medium
+    context_window: 128000
+
+# Role assignments
+defaults:
+  # Planning Phase - Centralized (Pattern A)
+  planning_lead: opus-4.5
+  planning_participants: [gemini-3-pro, gpt-5.1]
+
+  # Implementation Phase - Hybrid A+C
+  implementation_lead: opus-4.5
+  implementation_workers: [sonnet-4.5, gpt-5.1-codex]
+
+  # Support
+  research: sonnet-4.5-online
+  utility: [haiku-4.5, grok-4.1-fast]

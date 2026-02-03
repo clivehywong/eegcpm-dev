@@ -1,0 +1,30 @@
+# Standard Epochs Configuration
+# Demonstrates dependency on preprocessing stage
+
+stage: epochs
+name: standard
+description: Standard epoching with baseline correction
+depends_on:
+  preprocessing: standard  # Depends on "standard" preprocessing variant
+  task: rest  # Apply to "rest" task only
+
+# Epoching parameters
+tmin: -0.2
+tmax: 0.5
+baseline: [-0.2, 0.0]
+detrend: 1  # Linear detrend
+
+# Rejection criteria
+rejection:
+  strategy: threshold
+  reject:
+    eeg: 150.0e-6  # 150 µV
+  flat:
+    eeg: 1.0e-6  # 1 µV
+  reject_by_annotation: true
+
+# Event selection
+event_id: null  # Use all events
+
+# Output location automatically determined by:
+# derivatives/epochs/{preprocessing}/{task}/{subject}/ses-{session}/

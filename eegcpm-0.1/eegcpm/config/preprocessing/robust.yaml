@@ -1,0 +1,76 @@
+# Robust Preprocessing Configuration
+# Three-stage ASR for very noisy data
+#
+# Pipeline: Highpass → Bad Channels → Zapline → Lowpass → ASR (mild) → ICA → ICLabel → ASR (aggressive) → Interpolate → Reference
+#
+preprocessing:
+  steps:
+  - name: montage
+    params:
+      type: standard_1020
+      on_missing: warn
+  - name: filter
+    params:
+      l_freq: 0.5
+      h_freq: null  # Highpass only - lowpass comes after Zapline
+      method: fir
+      fir_window: hamming
+      phase: zero
+  - name: drop_flat
+    params:
+      variance_threshold: 1.0e-15
+  - name: bad_channels
+    params:
+      method: prep
+      drop: true
+  - name: zapline
+    params:
+      fline: null
+      adaptive: true
+      noiseCompDetectSigma: 2.0  # More aggressive for noisy data
+      fixedNremove: 3
+  - name: lowpass
+    params:
+      h_freq: 40.0
+      method: fir
+      phase: zero
+  - name: artifacts
+    params:
+      amplitude_threshold: 0.0005
+      flatline_duration: 5.0
+  - name: asr
+    params:
+      cutoff: 40
+      mode: mild
+      method: eegprep
+      train_duration: 60.0
+  - name: ica
+    params:
+      method: fastica  # Changed from picard (incompatible with NumPy 2.x)
+      n_components: rank-1
+      random_state: 42
+      l_freq_fit: 1.0
+      auto_detect_artifacts: true
+      reject_by_annotation: true
+  - name: iclabel
+    params:
+      threshold: 0.8
+      reject_labels:
+      - eye
+      - muscle
+      - heart
+      remove_components: true
+  - name: asr
+    params:
+      cutoff: 15
+      mode: aggressive
+      method: eegprep
+      train_duration: 60.0
+  - name: interpolate
+    params:
+      mode: accurate
+      max_bad_percent: 50.0
+  - name: reference
+    params:
+      type: average
+      projection: true

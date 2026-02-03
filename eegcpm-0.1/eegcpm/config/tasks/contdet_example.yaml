@@ -1,0 +1,87 @@
+# Task Configuration: Continuous Detection (contdet)
+# This defines task structure, events, and ERP components for analysis
+
+task_name: contdet
+description: Continuous detection task with target and distractor stimuli
+
+# Task type - determines QC and analysis workflow
+task_type: event-related  # Options: 'event-related' or 'continuous'
+
+# Primary event for basic QC/ERP visualization in preprocessing stage
+primary_event:
+  name: all_stimuli  # Name for QC reports
+  codes: [1, 2]      # Event codes to include (target + distractor)
+
+# Epoch timing
+tmin: -0.3    # Epoch start (seconds before event)
+tmax: 0.8     # Epoch end (seconds after event)
+baseline: [-0.2, 0.0]  # Baseline correction window
+
+# Experimental conditions (independent variables)
+conditions:
+  - name: target
+    event_codes: [1]
+    description: Target stimuli requiring response
+
+  - name: distractor
+    event_codes: [2]
+    description: Distractor stimuli (no response)
+
+# Behavioral response mapping (optional)
+response_mapping:
+  response_column: response  # Column name in events file
+  categories:
+    correct: 1
+    incorrect: 0
+    miss: -1
+  rt_column: rt  # Reaction time column
+  rt_min: 100    # Min valid RT (ms)
+  rt_max: 2000   # Max valid RT (ms)
+
+# ERP components to extract (used in features/ERP stage)
+erp_components:
+  - name: P1
+    search_window: [0.08, 0.12]  # 80-120ms
+    channels: [Oz, O1, O2]       # Occipital channels
+    polarity: positive
+    description: Early visual component
+
+  - name: N1
+    search_window: [0.14, 0.18]  # 140-180ms
+    channels: [Oz, O1, O2]
+    polarity: negative
+    description: Visual discrimination component
+
+  - name: P3
+    search_window: [0.3, 0.5]    # 300-500ms
+    channels: [Pz, CPz, Cz]      # Parietal channels
+    polarity: positive
+    description: Target detection/decision component
+
+  - name: N2
+    search_window: [0.2, 0.3]    # 200-300ms
+    channels: [Fz, FCz, Cz]      # Frontal-central
+    polarity: negative
+    description: Conflict monitoring component
+
+# Rejection criteria
+reject:
+  eeg: 100e-6  # 100 µV for EEG channels
+
+flat:
+  eeg: 1e-6    # 1 µV (flat line detection)
+
+# Trial binning specifications (optional - for advanced analysis)
+binning:
+  - name: rt_quartiles
+    method: quantile
+    n_bins: 4
+    column: rt
+    labels: [fast, medium_fast, medium_slow, slow]
+
+sampling_rate: 500  # Expected sampling rate (Hz)
+
+notes: |
+  Standard continuous detection task configuration.
+  Used for attention and visual processing studies.
+  ERP components defined for feature extraction stage.

@@ -1,0 +1,37 @@
+# Feature Extraction Configuration
+# Connectivity features using wPLI
+
+stage: features
+name: connectivity-wpli
+description: Weighted Phase Lag Index connectivity features
+depends_on:
+  preprocessing: standard
+  task: rest
+  source: dSPM-CONN32  # Depends on specific source variant
+
+# Connectivity parameters
+methods:
+  - wpli  # Weighted Phase Lag Index
+
+# Frequency bands
+frequency_bands:
+  delta: [1, 4]
+  theta: [4, 8]
+  alpha: [8, 13]
+  beta: [13, 30]
+  gamma: [30, 45]
+
+# Time windows
+time_windows:
+  - name: prestim
+    tmin: -0.5
+    tmax: 0.0
+  - name: poststim
+    tmin: 0.0
+    tmax: 0.5
+
+# ROI selection (from source stage)
+use_conn_rois: true
+
+# Output location automatically determined by:
+# derivatives/features/{preprocessing}/{task}/{source-variant}/connectivity-wpli/

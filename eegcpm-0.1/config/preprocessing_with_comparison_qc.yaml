@@ -1,0 +1,86 @@
+# EEGCPM Preprocessing Configuration with Comparison QC
+# Example configuration showing how to enable preprocessing comparison diagnostics
+
+preprocessing:
+  # Montage
+  montage:
+    enabled: true
+    montage_name: "GSN-HydroCel-129"
+
+  # Bad channel detection & interpolation
+  bad_channels:
+    enabled: true
+    detection_methods:
+      - flatline: true
+      - variance: true
+      - correlation: false  # RANSAC disabled (requires autoreject)
+    flatline_duration_s: 5.0
+    variance_threshold: 3.0
+    interpolation:
+      enabled: true
+      method: "spline"
+
+  # Artifact annotation
+  artifacts:
+    enabled: true
+    methods:
+      - threshold: true
+    amplitude_threshold_uv: 150
+
+  # Re-referencing
+  referencing:
+    enabled: true
+    reference_type: "average"
+
+  # Resampling
+  resampling:
+    enabled: false
+    target_sfreq: 250
+
+  # Filtering
+  filtering:
+    enabled: true
+    l_freq: 0.5
+    h_freq: 40.0
+    notch_freq: null
+    method: "fir"
+
+  # ICA
+  ica:
+    enabled: true
+    n_components: 20
+    method: "picard"
+    random_state: 42
+    max_iter: 500
+    artifact_detection:
+      enabled: true
+      method: "iclabel"
+      threshold: 0.8
+
+  # ASR (optional)
+  asr:
+    enabled: false
+
+# Preprocessing Comparison QC
+comparison_qc:
+  enabled: true  # Enable comparison diagnostics
+  enable_eegprep: true  # Compare with EEGPrep if available
+  figure_dpi: 150
+
+  # EEGPrep Step 1: Mild ASR
+  eegprep_config_mild:
+    FlatlineCriterion: 5
+    Highpass: [0.25, 0.75]
+    BurstCriterion: 40  # MILD
+    ChannelCriterion: 0.8
+    WindowCriterion: 0.25
+    LineNoiseCriterion: 4
+
+  # EEGPrep Step 3: Aggressive ASR
+  eegprep_config_aggressive:
+    FlatlineCriterion: "off"
+    Highpass: "off"
+    BurstCriterion: 20  # AGGRESSIVE
+    ChannelCriterion: "off"
+    WindowCriterion: 0.25
+    LineNoiseCriterion: "off"

@@ -1,0 +1,26 @@
+# Source Reconstruction Configuration
+# dSPM with CONN 32-ROI parcellation
+
+stage: source
+name: dSPM-CONN32
+description: dSPM inverse solution with CONN network ROIs
+depends_on:
+  preprocessing: standard
+  task: rest
+
+# Inverse solution parameters
+method: dSPM
+snr: 3.0
+loose: 0.2
+depth: 0.8
+
+# Parcellation
+parcellation: conn_networks  # Use CONN 32-ROI template
+use_conn_rois: true
+
+# Forward model
+spacing: oct6
+conductivity: [0.3, 0.006, 0.3]  # 3-layer BEM (brain, skull, scalp)
+
+# Output location automatically determined by:
+# derivatives/source/{preprocessing}/{task}/variant-dSPM-CONN32/{subject}/ses-{session}/

@@ -1,0 +1,36 @@
+# Source reconstruction configuration - sLORETA with CONN 32 ROIs
+stage: source
+variant: sLORETA-CONN32
+
+# Dependencies
+depends_on:
+  preprocessing: standard
+  task: contdet
+  epochs: standard
+
+# Source reconstruction method
+method: sLORETA
+
+# Forward model parameters
+forward:
+  template: fsaverage
+  spacing: oct6
+
+# Inverse parameters
+inverse:
+  snr: 3.0
+  loose: 0.2
+  depth: 0.8
+
+# Parcellation for ROI extraction
+parcellation: conn_networks
+roi_radius: 10.0
+
+# Subject selection
+subjects: all
+
+# Output options
+output:
+  save_stc: true
+  save_roi_tc: true
+  generate_qc: true

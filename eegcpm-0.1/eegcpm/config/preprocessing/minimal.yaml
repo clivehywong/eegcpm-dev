@@ -1,0 +1,48 @@
+# Minimal Preprocessing Configuration
+# Basic filtering + ICA only (fastest, for clean data)
+#
+# Pipeline: Highpass → Lowpass → Bad Channels → ICA → ICLabel → Interpolate → Reference
+#
+preprocessing:
+  steps:
+  - name: montage
+    params:
+      type: standard_1020
+      on_missing: warn
+  - name: filter
+    params:
+      l_freq: 1.0
+      h_freq: 40.0  # Combined highpass+lowpass (minimal doesn't use Zapline)
+      method: fir
+      fir_window: hamming
+      phase: zero
+  - name: bad_channels
+    params:
+      method: ransac
+      mark_only: true  # Mark only, don't drop (will interpolate later)
+  - name: ica
+    params:
+      method: fastica  # Changed from picard (incompatible with NumPy 2.x)
+      n_components: rank-1
+      random_state: 42
+      l_freq_fit: 1.0
+      auto_detect_artifacts: true
+      reject_by_annotation: true
+  - name: iclabel
+    params:
+      threshold: 0.8
+      reject_labels:
+      - eye
+      - muscle
+      remove_components: true
+  - name: interpolate
+    params:
+      mode: accurate
+      max_bad_percent: 50.0
+  - name: reference
+    params:
+      type: average
+      projection: true
+  - name: resample
+    params:
+      sfreq: 256

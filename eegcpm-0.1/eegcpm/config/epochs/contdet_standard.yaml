@@ -1,0 +1,60 @@
+# Epochs Configuration: Continuous Detection Task
+# Extracts epochs from preprocessed data and combines runs
+
+# Stage and dependencies
+stage: epochs
+variant: standard
+
+depends_on:
+  preprocessing: eeglab  # Which preprocessing pipeline to use
+  task: contrastdetection  # Task name (must match BIDS task name)
+
+# Epoch timing
+tmin: -0.3    # Epoch start (seconds before event)
+tmax: 0.8     # Epoch end (seconds after event)
+
+# Baseline correction
+baseline: [-0.2, 0.0]  # Time window for baseline (null for no baseline)
+
+# Event IDs - map condition names to event codes
+event_id:
+  target: 1
+  distractor: 2
+
+# Decimation factor (1 = no decimation, 2 = downsample by 2, etc.)
+decim: 1
+
+# Detrend (0 = constant, 1 = linear, null = no detrending)
+detrend: 0
+
+# Artifact rejection
+rejection:
+  strategy: threshold  # Options: 'threshold', 'autoreject', 'none'
+
+  # Threshold-based rejection (peak-to-peak amplitude limits)
+  reject:
+    eeg: 100e-6  # 100 µV for EEG channels
+
+  # Flat channel detection
+  flat:
+    eeg: 1e-6    # 1 µV (flat line detection)
+
+  # Time window for rejection (null = full epoch)
+  reject_tmin: null
+  reject_tmax: null
+
+  # Reject by annotations (bad segments marked in preprocessing)
+  reject_by_annotation: true
+
+  # Autoreject parameters (if strategy='autoreject')
+  use_autoreject: false
+  autoreject_n_interpolate: [1, 4, 8, 16]  # Number of channels to interpolate
+
+# QC generation
+generate_qc: true
+
+notes: |
+  Standard epochs extraction for continuous detection task.
+  Combines all runs per subject/session/task.
+  Uses threshold-based artifact rejection.
+  Compatible with eeglab preprocessing pipeline.

@@ -1,0 +1,191 @@
+# Clustering-Aware Preprocessing Comparison Configuration
+# Compares different bad channel clustering strategies
+#
+# Author: EEGCPM Development Team
+# Date: 2025-12-03
+
+# List of pipelines to compare
+pipelines:
+  # Pipeline 1: Standard (no clustering awareness)
+  - name: "standard_interpolate_all"
+    type: "mne"
+    enabled: true
+    description: "Standard preprocessing - interpolate all bad channels (ignore clustering)"
+    parameters:
+      montage:
+        enabled: true
+        montage_name: "GSN-HydroCel-129"
+
+      bad_channels:
+        enabled: true
+        auto_detect: true
+        methods: ['variance', 'correlation']
+        variance_threshold: 3.0
+        correlation_threshold: 0.4
+        interpolate: true
+        max_bad_channel_percent: 30.0
+
+        # Clustering disabled or set to interpolate all
+        check_clustering: true
+        clustering_action: "interpolate_all"
+
+      artifacts:
+        enabled: true
+        amplitude_threshold: 500e-6
+
+      reference:
+        type: "average"
+
+      filter:
+        l_freq: 0.5
+        h_freq: 40.0
+
+      ica:
+        enabled: false  # Disable for faster comparison
+
+      asr:
+        enabled: false
+
+  # Pipeline 2: Adaptive (recommended)
+  - name: "clustering_adaptive"
+    type: "mne"
+    enabled: true
+    description: "Adaptive clustering: mild=interp, moderate/severe=drop clustered"
+    parameters:
+      montage:
+        enabled: true
+        montage_name: "GSN-HydroCel-129"
+
+      bad_channels:
+        enabled: true
+        auto_detect: true
+        methods: ['variance', 'correlation']
+        variance_threshold: 3.0
+        correlation_threshold: 0.4
+        interpolate: true
+        max_bad_channel_percent: 30.0
+
+        # Adaptive clustering
+        check_clustering: true
+        clustering_action: "adaptive"
+        clustering_thresholds:
+          moderate: 20.0
+          severe: 50.0
+        clustering_k_neighbors: 6
+        clustering_neighbor_threshold: 0.5
+
+      artifacts:
+        enabled: true
+        amplitude_threshold: 500e-6
+
+      reference:
+        type: "average"
+
+      filter:
+        l_freq: 0.5
+        h_freq: 40.0
+
+      ica:
+        enabled: false
+
+      asr:
+        enabled: false
+
+  # Pipeline 3: Conservative (always drop clustered)
+  - name: "clustering_drop_all"
+    type: "mne"
+    enabled: true
+    description: "Conservative: always drop clustered channels"
+    parameters:
+      montage:
+        enabled: true
+        montage_name: "GSN-HydroCel-129"
+
+      bad_channels:
+        enabled: true
+        auto_detect: true
+        methods: ['variance', 'correlation']
+        variance_threshold: 3.0
+        correlation_threshold: 0.4
+        interpolate: true
+        max_bad_channel_percent: 30.0
+
+        # Always drop clustered
+        check_clustering: true
+        clustering_action: "drop_clustered"
+        clustering_thresholds:
+          moderate: 20.0
+          severe: 50.0
+
+      artifacts:
+        enabled: true
+        amplitude_threshold: 500e-6
+
+      reference:
+        type: "average"
+
+      filter:
+        l_freq: 0.5
+        h_freq: 40.0
+
+      ica:
+        enabled: false
+
+      asr:
+        enabled: false
+
+  # Pipeline 4: Strict quality (fail on severe)
+  - name: "clustering_strict_qc"
+    type: "mne"
+    enabled: true
+    description: "Strict QC: fail subjects with severe clustering"
+    parameters:
+      montage:
+        enabled: true
+        montage_name: "GSN-HydroCel-129"
+
+      bad_channels:
+        enabled: true
+        auto_detect: true
+        methods: ['variance', 'correlation']
+        variance_threshold: 3.0
+        correlation_threshold: 0.4
+        interpolate: true
+        max_bad_channel_percent: 20.0
+
+        # Fail on severe clustering
+        check_clustering: true
+        clustering_action: "fail_on_severe"
+        clustering_thresholds:
+          moderate: 20.0
+          severe: 50.0
+
+      artifacts:
+        enabled: true
+        amplitude_threshold: 500e-6
+
+      reference:
+        type: "average"
+
+      filter:
+        l_freq: 0.5
+        h_freq: 40.0
+
+      ica:
+        enabled: false
+
+      asr:
+        enabled: false
+
+# Comparison QC settings
+comparison_qc:
+  figure_dpi: 150
+  generate_individual_reports: true
+  generate_summary_report: true
+
+# Batch processing settings
+batch:
+  n_subjects: 10  # Number of subjects to process
+  parallel: false  # Set to true for parallel processing
+  save_intermediate: true
+  reference_channels: ['E129']  # Channels to drop before processing

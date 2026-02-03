@@ -1,0 +1,22 @@
+# Minimal Preprocessing Configuration
+# For testing or very clean data
+
+stage: preprocessing
+name: minimal
+description: Minimal preprocessing - basic filtering only
+depends_on: null
+
+# Minimal steps
+steps:
+  - name: filter
+    l_freq: 1.0
+    h_freq: 30.0
+    method: fir
+
+  - name: bad_channels
+    method: manual  # No automatic rejection
+    threshold: null
+
+# No ICA - minimal pipeline
+
+task: null
