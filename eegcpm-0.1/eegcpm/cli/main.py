@@ -29,7 +29,7 @@ Examples:
   # Resume failed/incomplete workflows
   eegcpm resume --project /path/to/project --subject sub-001
 
-For more information: https://github.com/cliverosfield/eegcpm-dev
+For more information: https://github.com/clivehywong/eegcpm-dev
         """
     )
 
