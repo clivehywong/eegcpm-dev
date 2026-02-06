@@ -53,7 +53,7 @@ dmypy.json
 
 # Data directories (DO NOT COMMIT DATA)
 hbn/
-data/
+/data/
 derivatives/
 bids/
 *.fif
